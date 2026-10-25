@@ -1,0 +1,11 @@
+{
+  "id": "#(mascotaId)",
+  "name": "#(nombreMascota)",
+  "category": {
+    "id": 1,
+    "name": "Perros"
+  },
+  "photoUrls": ["https://example.org/mascota.png"],
+  "tags": [{ "id": 1, "name": "curso" }],
+  "status": "available"
+}

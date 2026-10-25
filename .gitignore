@@ -1,0 +1,12 @@
+# Resultado de compilacion y reportes
+/target/
+# IDE
+/.idea/
+*.iml
+# Java y sistema
+*.class
+.DS_Store
+Thumbs.db
+# Archivos locales con secretos: no incluirlos en Git
+.env
+.env.*
