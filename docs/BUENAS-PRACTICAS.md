@@ -33,3 +33,10 @@ Petstore 3 es una API pública de demostración, no un ambiente QA dedicado. Otr
 ## 5. Qué sí es y qué no es la validación de esquema de Karate
 
 Un archivo como `data/schemas/mascota-schema.json` declara marcadores (`#number`, `#string`, `#regex`, `#[]`) reconocidos por el operador `match` de Karate. No es una validación automática de un archivo JSON Schema Draft/OpenAPI, ni un generador automático de validaciones desde `openapi.json`. Para eso se necesitaría una integración adicional y un objetivo didáctico distinto.
+
+## Generacion de reportes
+
+- Usar un runner que espere el resultado completo de la suite antes de asertar.
+- Revisar fecha, ruta y archivos de `karate-summary.html` de cada tipo de ejecucion.
+- No confundir reportes JUnit de `target/surefire-reports` con los reportes propios de Karate.
+- No deshabilitar la verificacion SSL permanentemente solo para obtener reportes.

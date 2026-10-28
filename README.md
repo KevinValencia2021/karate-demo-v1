@@ -1,6 +1,25 @@
 # Karate DSL 1.4.1 + Java 17 + Petstore 3
 
-Proyecto Maven educativo, preparado para abrir en **IntelliJ IDEA** y enseñar automatización REST **desde cero**. Incluye ejemplos comentados en español, archivos de datos y dos modos de ejecución para no modificar el servicio público durante las primeras clases.
+## Ejecutar por tags (actualización v3)
+
+**`PetstoreTest.java` ahora filtra dinámicamente todos los archivos `.feature` por tag.**
+No es necesario seleccionar un archivo específico o editar el código Java.
+
+```powershell
+mvn test                           # Por defecto: @smoke
+mvn test "-DtestTags=@headers"      # Ambos escenarios de headers
+mvn test "-DtestTags=@csv"          # Todos los ejemplos CSV
+mvn test "-DtestTags=@schema"       # Contratos JSON (escribe datos)
+mvn test "-DtestTags=@regression"   # Todos los escenarios de escritura
+mvn test "-DtestTags=@local"        # Reportes sin Internet
+```
+
+Desde IntelliJ: ejecuta `PetstoreTest.java` con **VM options** `-DtestTags=@csv`.
+Los reportes siguen generándose en `target/karate-reports/karate-summary.html`.
+**Guía completa y tabla de etiquetas:** `docs/EJECUCION-POR-TAGS.md`.
+
+
+Proyecto Maven educativo, preparado para abrir en **IntelliJ IDEA** y enseñar automatización REST **desde cero**. Incluye ejemplos comentados en español, archivos de datos y runners independientes con reportes HTML reproducibles.
 
 > Versiones **fijas**: JDK 17, Karate `1.4.1`, Maven (recomendado `3.9.x`), JUnit 5. No se ha sustituido Karate 1.4.1 por versiones 1.5/2.x.
 
@@ -21,12 +40,77 @@ Proyecto Maven educativo, preparado para abrir en **IntelliJ IDEA** y enseñar a
 4. Ve a **Settings > Build, Execution, Deployment > Build Tools > Maven > Runner**: configura **JRE = JDK 17**.
 5. En **Settings > Build Tools > Maven**, selecciona la **Bundled Maven** (Maven incluido) si `mvn` no está en PATH.
 6. En la ventana **Maven** (lateral derecho), pulsa **Reload All Maven Projects** para descargar dependencias.
-7. Abre `src/test/java/pe/edu/qa/PetstoreTest.java`. Haz clic en el triángulo verde junto a `pruebasRapidas()` para ejecutar.
+7. Abre `src/test/java/pe/edu/qa/PetstoreTest.java`. Haz clic en el triángulo verde junto a `ejecutar()` para ejecutar.
 8. Abre el reporte generado en **`target/karate-reports/karate-summary.html`** y revisa pasos, peticiones y respuestas.
 
 ### Si no funcionan `java` o `mvn` en CMD/PowerShell
 
 Esto **no implica necesariamente** que Java o Maven falten. Puede que no estén configurados en el PATH. Con IntelliJ puedes ejecutar usando JDK 17 y Maven integrados. Si deseas usar consola, comprueba `java -version` y `mvn -version`; consulta `docs/GUIA-CLASE.md` para las correcciones y `scripts/diagnostico-windows.ps1` para revisar el entorno.
+
+## Reportes HTML siempre al finalizar una ejecucion (revision v2)
+
+Los 4 runners Java utilizan **Runner.path(...).parallel(N)** de Karate 1.4.1 dentro
+un test JUnit 5. Esta API genera un resumen HTML al terminar la suite, antes de
+que la asercion de JUnit marque fallida una ejecucion por errores HTTP/SSL.
+La clase tambien **verifica que el archivo del reporte exista**.
+
+| Runner (clic derecho > Run) | Filtra | Reporte HTML |
+| --- | --- | --- |
+| `PetstoreTest` | dinámico (`@smoke` por defecto, `-DtestTags=@...`) | `target/karate-reports/karate-summary.html` |
+| `PetstoreRegression` | `@regression` | `target/karate-reports-regression/karate-summary.html` |
+| `PetstoreParallel` | `@smoke`, 3 hilos | `target/karate-reports-parallel/karate-summary.html` |
+| `PetstoreLocalReport` | `@local`, sin Internet | `target/karate-reports-local/karate-summary.html` |
+
+**Por que antes parecia generarse solo una vez:** Karate escribe el resumen
+cuando el runner finaliza la suite. Si IntelliJ vuelve a ejecutar un unico
+escenario aislado, se cancela la ejecucion antes del final, se abre un reporte
+antiguo, o se mira otro directorio, puede parecer que no se ha actualizado.
+No es posible determinar cual caso concreto ocurrio sin el log de tu ejecucion.
+Los runners nuevos fuerzan la finalizacion explicita de la suite y usan rutas
+claras y separadas. No ejecutes dos runners simultaneamente sobre la MISMA carpeta.
+
+Karate 1.4.1 hace una copia del reporte anterior cuando vuelve a ejecutar una
+suite en la misma carpeta; el reporte mas reciente conserva el nombre fijo
+`karate-summary.html`. **No abras el directorio de copia `_timestamp` por error.**
+
+### Comprobacion sin depender de Internet
+
+1. Ejecuta `PetstoreLocalReport.java` desde IntelliJ.
+2. Abre `target/karate-reports-local/karate-summary.html`.
+3. Comprueba que aparecen dos escenarios aprobados y la fecha de modificacion cambia.
+4. Ejecutalo una segunda vez: el reporte actual se regenera y el anterior se archiva.
+5. Ahora ejecuta `PetstoreTest.java`; debe aparecer el reporte `target/karate-reports/karate-summary.html` incluso si Petstore presenta un fallo de red/SSL durante un escenario.
+
+PowerShell, desde el directorio que contiene `pom.xml`:
+
+```powershell
+mvn test -Dtest=PetstoreLocalReport
+mvn test -Dtest=PetstoreTest
+mvn test -Dtest=PetstoreRegression
+mvn test -Dtest=PetstoreParallel
+
+# Abre directamente el reporte correspondiente a cada runner:
+.\scripts\abrir-reporte.ps1 -Tipo local
+.\scripts\abrir-reporte.ps1 -Tipo smoke
+```
+
+**Importante:** `mvn clean` borra `target/` por completo, incluidos sus reportes.
+Vuelve a ejecutar las pruebas antes de abrir `karate-summary.html`.
+
+### Si tambien aparece `SSLHandshakeException: PKIX path building failed`
+
+No confundas un fallo HTTPS con la generacion del reporte. El reporte debe
+registrar el fallo de la llamada HTTP y el runner debe terminar como fallido.
+La correccion segura consiste en configurar el truststore de Java 17 con la
+CA apropiada tras verificar la cadena SSL. Solo como diagnostico temporal, si
+la red es confiable y tienes permiso para omitir la validacion:
+
+```powershell
+mvn test -Dtest=PetstoreTest -DsslTrustAll=true
+```
+
+En IntelliJ, incluye `-DsslTrustAll=true` como propiedad de VM en la configuracion
+de ejecucion cuando no usas el comando Maven. **No usar en produccion ni CI.**
 
 ## 3. Ejecutar desde consola
 
@@ -52,7 +136,7 @@ mvn -version
 
 Si estás en IntelliJ sin `mvn` en PATH: ventana lateral **Maven > Lifecycle > test** para pruebas smoke; para regresión, ejecuta el método de `PetstoreRegression.java` mediante clic derecho/Run (o configura el goal `test -Dtest=PetstoreRegression` desde Maven).
 
-**Importante:** `mvn test` SOLO ejecuta el runner `PetstoreTest.java`; los otros runners no terminan en `Test` y se invocan por separado. El runner de regresión no se dispara por accidente.
+**Importante:** `mvn test` ejecuta `PetstoreTest.java` (`@smoke` por defecto, configurable mediante `-DtestTags`). Los otros runners no terminan en `Test` y se ejecutan explicitamente. Asi la regresion no se dispara por accidente.
 
 ## 4. Estructura y qué enseña cada archivo
 
@@ -64,11 +148,13 @@ karate-petstore-java17-1.4.1/
 │  ├─ GUIA-CLASE.md                      Temario paso a paso y ejercicios
 │  └─ BUENAS-PRACTICAS.md                Convenciones, contratos y límites
 ├─ scripts/diagnostico-windows.ps1       Ayuda para diagnosticar Java/Maven
+├─ scripts/abrir-reporte.ps1             Abre resumen HTML y muestra fecha
 └─ src/test/
    ├─ java/pe/edu/qa/
    │  ├─ PetstoreTest.java               Runner smoke (mvn test)
    │  ├─ PetstoreRegression.java         Runner de escritura explícita
-   │  └─ PetstoreParallel.java           Paralelismo de consultas
+   │  ├─ PetstoreParallel.java           Paralelismo de consultas
+   │  └─ PetstoreLocalReport.java        Diagnostico de reportes offline
    └─ resources/
       ├─ karate-config.js                URL base y timeouts
       ├─ features/
@@ -80,7 +166,8 @@ karate-petstore-java17-1.4.1/
       │  ├─ 06-csv.feature               CSV con Scenario Outline dinámico
       │  ├─ 07-outline-inline.feature    Tabla Examples normal
       │  ├─ 08-crud-completo.feature     POST, GET, PUT, DELETE
-      │  └─ 09-negativos-opcional.feature Ejemplo 404 (@manual)
+      │  ├─ 09-negativos-opcional.feature Ejemplo 404 (@manual)
+      │  └─ 10-reporte-local.feature     Diagnostico offline (@local)
       └─ data/
          ├─ headers/headers-petstore.json
          ├─ requests/crear-mascota.json

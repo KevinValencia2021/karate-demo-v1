@@ -1,9 +1,10 @@
-@smoke
+@smoke @headers
 Feature: 02 - Enviar headers en el feature y desde un JSON externo
 
   Background:
     * url baseUrl
 
+  @headers-inline @get
   Scenario: Definir headers directamente en el archivo feature
     Given path 'pet', 'findByStatus'
     And param status = 'pending'
@@ -14,6 +15,7 @@ Feature: 02 - Enviar headers en el feature y desde un JSON externo
     Then status 200
     And match response == '#[]'
 
+  @headers-archivo @get
   Scenario: Cargar multiples headers desde un archivo JSON
     # Es mas facil mantener headers comunes en un recurso reutilizable.
     * def cabeceras = read('classpath:data/headers/headers-petstore.json')

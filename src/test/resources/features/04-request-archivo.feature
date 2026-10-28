@@ -1,4 +1,4 @@
-@regression
+@regression @post @request-archivo
 Feature: 04 - POST con request JSON y headers JSON externos
 
   Background:

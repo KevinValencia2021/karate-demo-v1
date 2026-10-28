@@ -1,4 +1,4 @@
-@smoke
+@smoke @basico
 Feature: 01 - Mi primera prueba GET con Karate DSL
   # Meta: comprender Given, When, Then, path, param y match.
 
@@ -6,6 +6,7 @@ Feature: 01 - Mi primera prueba GET con Karate DSL
     # baseUrl proviene de src/test/resources/karate-config.js
     * url baseUrl
 
+  @get
   Scenario: Consultar mascotas disponibles
     Given path 'pet', 'findByStatus'
     # Agrega ?status=available a la URL sin concatenar cadenas.
@@ -17,6 +18,7 @@ Feature: 01 - Mi primera prueba GET con Karate DSL
     # El tipo de contenido devuelto debe ser JSON.
     And match header Content-Type contains 'json'
 
+  @sin-api
   Scenario: Practicar validaciones basicas sin depender de una API
     * def ejemplo = { id: 101, name: 'Firulais', status: 'available', photoUrls: [] }
     * match ejemplo.id == 101

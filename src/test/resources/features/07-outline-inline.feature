@@ -1,4 +1,4 @@
-@smoke
+@smoke @outline @get
 Feature: 07 - Data Driven sin CSV para comparar los enfoques
 
   Background:

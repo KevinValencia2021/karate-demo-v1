@@ -1,4 +1,4 @@
-@manual
+@manual @negativo @get
 Feature: 09 - Laboratorio opcional: codigo de error en una consulta
   # Este caso puede variar entre versiones del servidor de demostracion.
 

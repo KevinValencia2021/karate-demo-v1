@@ -9,9 +9,25 @@
 1. Revisar Java 17: `java -version`; Maven: `mvn -version` (o Maven integrado en IntelliJ).
 2. Cargar `pom.xml` y descargar dependencias antes de compartir pantalla.
 3. Abrir Swagger UI de Petstore 3 y enseñar el contrato y los métodos.
-4. Ejecutar solo `PetstoreTest.java` para verificar que los GET están disponibles.
-5. Si hay fallos de red, demostrar validaciones locales del archivo `01-primer-get.feature`.
+4. Ejecutar `PetstoreLocalReport.java` para comprobar el reporte sin Internet y luego `PetstoreTest.java` para verificar los GET.
+5. Si hay fallos de red, demostrar los escenarios 100% locales de `10-reporte-local.feature`.
 6. Para un grupo numeroso, evitar ejecutar CRUD contra el servidor compartido de forma simultánea; considerar un Petstore local por equipo.
+
+## Ejecución selectiva por tags (10 minutos adicionales)
+
+Para no depender del archivo `.feature` elegido, ejecuta `PetstoreTest.java` y cambia
+la propiedad **`testTags`** desde IntelliJ (**VM options**) o Maven:
+
+```powershell
+mvn test "-DtestTags=@headers"
+mvn test "-DtestTags=@csv"
+mvn test "-DtestTags=@regression"
+mvn test "-DtestTags=@local"
+```
+
+Práctica: ejecuta `@headers` (dos escenarios), después `@headers-inline` (uno).
+Explica la diferencia entre tag en `Feature` (heredado) y en `Scenario` (individual).
+Consulta `docs/EJECUCION-POR-TAGS.md` para la lista y los reportes.
 
 ## Clase 1 — Conceptos y primera automatización (90 minutos)
 
@@ -78,7 +94,8 @@
 2. Revisa la URL completa: `baseUrl + path + param`.
 3. Comprueba headers enviados y body de la petición.
 4. Distingue entre error funcional (match incorrecto) y problema de ambiente (DNS, timeout, servidor compartido).
-5. Verifica los tests en `target/karate-reports/karate-summary.html`.
+5. Busca `karate-summary.html` en la carpeta propia de cada runner (ver README). Comprueba que su fecha de modificacion corresponde a la ultima ejecucion.
+6. Si la API falla por SSL, comprueba que el reporte muestre el error; no confundas fallo de escenario con fallo de generacion de reporte.
 
 ## Windows / IntelliJ: si Java y Maven no son reconocidos
 
@@ -101,3 +118,11 @@
 - Integración CI/CD con GitHub Actions o GitLab CI.
 
 **Regla del curso:** no inventar el mensaje exacto de error ni asegurar un volumen de datos fijo en un servidor de pruebas compartido.
+
+## Diagnostico de reportes (10 minutos extra)
+
+- Ejecuta dos veces `PetstoreLocalReport.java`: el resumen debe aparecer ambas veces en `target/karate-reports-local/karate-summary.html`.
+- Muestra en IntelliJ los archivos generados y actualiza la vista del proyecto (Synchronize).
+- Ejecuta `PetstoreTest.java`, compara el resultado del test en JUnit con el HTML de Karate.
+- Explica que `target/surefire-reports` (JUnit) y `target/karate-reports` (Karate) son reportes distintos.
+- Explica que `mvn clean` elimina los reportes y que correr clases diferentes no actualiza el mismo HTML.

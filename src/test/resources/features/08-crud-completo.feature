@@ -1,4 +1,4 @@
-@regression
+@regression @crud
 Feature: 08 - Ciclo CRUD: POST, GET, PUT y DELETE
 
   Background:

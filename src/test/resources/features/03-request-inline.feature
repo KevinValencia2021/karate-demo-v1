@@ -1,4 +1,4 @@
-@regression
+@regression @post @request-inline
 Feature: 03 - POST con JSON definido directamente dentro del feature
   # Crea datos de demostracion en un servidor publico: ejecutar con criterio.
 

@@ -1,4 +1,4 @@
-@regression
+@regression @post @schema
 Feature: 05 - Validar estructura y tipos de una respuesta JSON
 
   Background:

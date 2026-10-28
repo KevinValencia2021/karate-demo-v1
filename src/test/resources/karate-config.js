@@ -1,15 +1,20 @@
-// Karate ejecuta esta funcion ANTES de cada escenario.
-// Evitamos duplicar URL base y timeout en los archivos .feature.
+// Karate evalua esta funcion antes de cada escenario.
 function fn() {
   var config = {
-    // Por defecto utilizamos el servidor publico Petstore OpenAPI 3.
-    // Puede cambiarse: -DbaseUrl=http://localhost:8080/api/v3
     baseUrl: karate.properties['baseUrl'] || 'https://petstore3.swagger.io/api/v3'
   };
 
-  // Milisegundos: 10 segundos para conectar y 15 para leer respuesta.
+  // Limites de conexion/lectura en milisegundos.
   karate.configure('connectTimeout', 10000);
   karate.configure('readTimeout', 15000);
+
+  // Por defecto SI validamos certificados SSL (buena practica).
+  // Solo para diagnostico en una red de confianza y con autorizacion:
+  // mvn test -Dtest=PetstoreTest -DsslTrustAll=true
+  // Esto NO corrige el almacen de certificados; desactiva su validacion.
+  if (karate.properties['sslTrustAll'] == 'true') {
+    karate.configure('ssl', true);
+  }
 
   return config;
 }
